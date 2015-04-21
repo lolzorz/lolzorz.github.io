@@ -1,4 +1,4 @@
 function submit() {
 	var btn = document.getElementById("username").value;
-	alert(btn);
+	window.location.replace("./../chatroom.html?username=" + btn);
 }
