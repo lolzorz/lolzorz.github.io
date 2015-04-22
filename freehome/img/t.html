@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimal-ui"/>
+	<style type="text/css">
+	#myCanvas,img{
+			display: block;
+			margin: 0 auto;
+			border: solid 1px #cacaca;
+		}
+	
+		</style>
+</head>
+<body>
+	<canvas id="myCanvas" width="200" height="200" style="border:1px solid #d3d3d3;">
+		
+	</canvas>
+	
+	<br>
+	<button id="bigger">放大</button>
+	<button id="smaller">缩小</button>
+	<script>
+	
+	var crop = (function(){
+		var c=document.getElementById("myCanvas");
+		var _width = c.offsetWidth;
+		var _height = c.offsetHeight;
+		var img_height;
+		var img_width;
+		var move_left=0;
+		var move_top=0;
+		var images_size = 1;
+ 		var cxt=c.getContext("2d");
+		var _preImage = function(url,callback){  
+			     var img = new Image(); //创建一个Image对象，实现图片的预下载  
+			     img.src = url;  
+			     window.img = img;
+			     if(img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数  
+			         callback.call(img);  
+			        return; // 直接返回，不用再处理onload事件  
+			     } 
+			     img.onload = function () { //图片下载完毕时异步调用callback函数。  
+			         callback.call(img);//将回调函数的this替换为Image对象  
+			     };  
+
+		}  
+		var scale = function(scaleX,scaleY){
+				images_size = scaleX;
+				cxt.clearRect(0,0,_width,_height);
+				cxt.drawImage(img,0,0,img_width*images_size,img_height*images_size);  
+		}
+		var translate = function(x,y){
+				cxt.clearRect(0,0,_width,_height);
+				//cxt.translate(x,y);
+				cxt.drawImage(img,move_left+x,move_top+y,img_width*images_size,img_height*images_size);  
+				move_left = x;
+				move_top = y;
+		}
+		var init = function(url){
+			    _preImage(url,function(){
+			    	img_height = img.height;
+			    	img_width = img.width;
+					cxt.drawImage(this,0,0,img_width,img_height);  
+				});
+		} 
+		return {
+			init:init,
+			scale:scale,
+			translate:translate
+		}
+	})();
+
+	var myCanvas=document.getElementById("myCanvas");
+        myCanvas.addEventListener("touchmove",function(e){
+        	if (e.targetTouches.length == 1) {
+	        	e.preventDefault();
+	        	var touch = event.targetTouches[0];
+	            console.log(touch)
+	          //  myCanvas.style.left = touch.pageX-50 + 'px';
+	       	   // myCanvas.style.top = touch.pageY-50 + 'px';
+	       	   crop.translate(touch.clientX-200,touch.clientY-100)
+	       	}
+
+    });
+
+    var bigger = document.getElementById("bigger");
+    var smaller = document.getElementById("smaller");
+    bigger.addEventListener("click",function(){
+    		crop.scale(1.2,1.2)
+    })
+    smaller.addEventListener("click",function(){
+    	    crop.scale(0.8,0.8)
+
+    })
+
+	crop.init("test.jpg")
+	
+</script>
+</body>
+</html>
